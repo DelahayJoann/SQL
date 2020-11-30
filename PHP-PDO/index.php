@@ -14,15 +14,28 @@ if(isset($_POST['ville'],$_POST['bas'],$_POST['haut'])){
     $_POST = array();
     header('Location: index.php');
 }
+if(isset($_POST['delete'])){
+    $string ='';
+    foreach($_POST['delete'] as $elem){
+        $string = $string.$elem.',';
+    }
+    echo substr($string, 0, -1);
+    $result = $bdd->query("DELETE FROM Météo WHERE PK_Météo IN (".substr($string, 0, -1).")");
+    $result->closeCursor();
+
+    $_POST = array();
+    header('Location: index.php');
+}
 
 $resultat = $bdd->query('SELECT * FROM Météo');
 
-echo '<table style="border: 1px solid black">';
+echo '<form action="" method="post"><table style="border: 1px solid black">';
     echo '<tr>';
         echo '<th style="border: 1px solid black">PK</th>';
         echo '<th style="border: 1px solid black">ville</th>';
         echo '<th style="border: 1px solid black">bas</th>';
         echo '<th style="border: 1px solid black">haut</th>';
+        echo '<th style="border: 1px solid black">delete</th>';
     echo '</tr>';
 while ($donnees = $resultat->fetch())
 {
@@ -31,9 +44,10 @@ while ($donnees = $resultat->fetch())
         echo '<td style="border: 1px solid black">'.$donnees['ville'].'</td>';
         echo '<td style="border: 1px solid black">'.$donnees['bas'].'</td>';
         echo '<td style="border: 1px solid black">'.$donnees['haut'].'</td>';
+        echo '<td style="border: 1px solid black"><input type="checkbox" value="'.$donnees['PK_Météo'].'" name="delete[]"></td>';
     echo '</tr>';
 }
-echo '</table>';
+echo '</table><input type="submit" value="Submit"></form>';
 
 $resultat->closeCursor();
 
