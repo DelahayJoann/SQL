@@ -1,9 +1,0 @@
-SELECT * FROM students INNER JOIN school;
-
-SELECT students.prenom FROM students;
-
-SELECT students.prenom,students.datenaissance,school.school FROM students LEFT JOIN school ON students.school = school.idschool;
-
-SELECT * from students WHERE students.genre = 'F';
-
-SELECT * FROM students WHERE students.school = (SELECT school.idschool FROM school WHERE school.school = 'Andy');
