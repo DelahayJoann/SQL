@@ -19,7 +19,6 @@ if(isset($_POST['delete'])){
     foreach($_POST['delete'] as $elem){
         $string = $string.$elem.',';
     }
-    echo substr($string, 0, -1);
     $result = $bdd->query("DELETE FROM Météo WHERE PK_Météo IN (".substr($string, 0, -1).")");
     $result->closeCursor();
 
