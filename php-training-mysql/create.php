@@ -1,20 +1,28 @@
 <?php
-	try
-	{
-		$bdd = new PDO('mysql:host=localhost;dbname=becode;charset=utf8', 'Joann', 'becode');
-	}
-	catch(Exception $e)
-	{
-		die('Erreur : '.$e->getMessage());
-	}
+	include './connectDB.php';
+
+	session_start();
+
+if (isset($_SESSION['login'],$_SESSION['pwd'],$_SESSION['editor'])) {
+	  echo "TEST PURPOSE: ".$_SESSION['login']." ".$_SESSION['pwd'];
+if($_SESSION['editor']){
 
 	if(isset($_POST['name'],$_POST['distance'],$_POST['duration'],$_POST['height_difference'])){
+		if (!filter_var($_POST['distance'], FILTER_VALIDATE_INT) || !filter_var($_POST['height_difference'], FILTER_VALIDATE_INT)) {
+			echo "<h1 style='color: red;'>Entrez des données correctes!</h1>";
+		}
+		else{
+			($_POST['available'] == 'on') ? $_POST['available'] = 1 : $_POST['available'] = 0;
+			$_POST = filter_var_array($_POST,FILTER_SANITIZE_STRING);
+			$_POST = filter_var_array($_POST,FILTER_SANITIZE_ADD_SLASHES);
 
-		$result = $bdd->query("INSERT INTO hiking VALUES ('','".$_POST['name']."','".$_POST['difficulty']."',".$_POST['distance'].",'".$_POST['duration']."',".$_POST['height_difference'].")");
-		print_r($bdd->errorInfo());
-		$result->closeCursor();
-		$_POST = array();
-		header('Location: read.php');
+			$result = $bdd->query("INSERT INTO hiking VALUES ('','".$_POST['name']."','".$_POST['difficulty']."',".$_POST['distance'].",'".$_POST['duration']."',".$_POST['height_difference'].",".$_POST['available'].")");
+			print_r($bdd->errorInfo());
+			$result->closeCursor();
+			$_POST = array();
+			header('Location: create.php');
+		}
+		
 	}
 ?>
 
@@ -26,8 +34,12 @@
 	<link rel="stylesheet" href="css/basics.css" media="screen" title="no title" charset="utf-8">
 </head>
 <body>
-	<a href="./read.php">Liste des données</a>
+	<br><a href="./read.php">Liste des données</a>
 	<h1>Ajouter</h1>
+	<?php if (isset($_SESSION['login'],$_SESSION['pwd'],$_SESSION['editor'])) {
+	  echo '<p><a href="./logout.php">Logout</a></p>';
+	}
+    ?>
 	<form action="" method="post">
 		<div>
 			<label for="name">Name</label>
@@ -47,7 +59,7 @@
 
 		<div>
 			<label for="distance">Distance</label>
-			<input type="text" name="distance" value="">
+			<input type="number" name="distance" value="">
 		</div>
 		<div>
 			<label for="duration">Durée</label>
@@ -55,9 +67,20 @@
 		</div>
 		<div>
 			<label for="height_difference">Dénivelé</label>
-			<input type="text" name="height_difference" value="">
+			<input type="number" name="height_difference" value="">
+		</div>
+		<div>
+			<label for="available">Disponible</label>
+			<input type="checkbox" name="available" checked>
 		</div>
 		<button type="submit" name="button">Envoyer</button>
 	</form>
 </body>
 </html>
+<?php
+}
+else{
+	header('Location: read.php');
+}
+}
+?>
