@@ -19,20 +19,31 @@ if(isset($_POST['nom'],$_POST['prenom'],$_POST['datum'])){
         $_POST['numero'] = 'NULL';
         $result = $bdd->query("UPDATE clients SET lastName = '".$_POST['nom']."', firstName = '".$_POST['prenom']."', birthDate = '".$_POST['datum']."', card = 0, cardNumber = NULL WHERE id = ".$_POST['id']."");
         $result->closeCursor();
+        if($_POST['previouscardnumber'] != null){
+            $result2 = $bdd->query("DELETE FROM cards WHERE cards.cardNumber = ".$_POST['previouscardnumber']."");
+            $result2->closeCursor();
+        }
+
         $_POST = array();
         header('Location: ex4.php');
     }
     else{
-        $result = $bdd->query("
-            BEGIN;
-            INSERT INTO clients (clients.lastName, clients.firstName, clients.birthDate, clients.card, clients.cardNumber)
-            VALUES('".$_POST['nom']."', '".$_POST['prenom']."','".$_POST['datum']."',".$_POST['carte'].",".$_POST['numero'].");
-            INSERT INTO cards (cards.cardNumber, cards.cardTypesId) 
-            VALUES(".$_POST['numero'].",(SELECT cardtypes.id FROM cardtypes WHERE cardtypes.id = ".$_POST['typecard']."));
-            COMMIT;
-        ");
+        $result = $bdd->query("UPDATE clients SET lastName = '".$_POST['nom']."', firstName = '".$_POST['prenom']."', birthDate = '".$_POST['datum']."', card = 1, cardNumber = ".$_POST['numero']." WHERE id = ".$_POST['id']."");
         print_r($bdd->errorInfo());
         $result->closeCursor();
+        if($_POST['previouscardnumber'] == null){
+            $result2 = $bdd->query("
+                INSERT INTO cards (cards.cardNumber, cards.cardTypesId) 
+                VALUES(".$_POST['numero'].",(SELECT cardtypes.id FROM cardtypes WHERE cardtypes.id = ".$_POST['typecard']."));
+            ");
+        }
+        else{
+            $result2 = $bdd->query("
+                UPDATE cards SET cards.cardNumber =".$_POST['numero'].", cards.cardTypesId = (SELECT cardtypes.id FROM cardtypes WHERE cardtypes.id = ".$_POST['typecard'].")
+                WHERE cards.cardNumber = ".$_POST['previouscardnumber'].";
+            ");
+        }
+        $result2->closeCursor();
         $_POST = array();
         header('Location: ex4.php');
     }
@@ -44,12 +55,14 @@ if(isset($_POST['searchnom'],$_POST['searchprenom'])){
     $result2 = $bdd->query("SELECT * FROM cardtypes");
     while ($donnees = $result->fetch()){
         $result3 = $bdd->query("SELECT * FROM cards WHERE cardNumber = ".$donnees['cardNumber']."");
+        echo $donnees['cardNumber'];
         if($result3 != false){
             while ($donnees3 = $result3->fetch()){
                 $cardTypesId = $donnees3['cardTypesId'];
             }
         }
         else{
+            $cardNumber = null;
             $cardTypesId = null;
         }
         if($result3 != false)$result3->closeCursor();
@@ -57,6 +70,7 @@ if(isset($_POST['searchnom'],$_POST['searchprenom'])){
 <h1>4. Update Client</h1>
 <form action="" method="post">
     <input type="hidden" name="id" value="<?php echo $donnees['id'] ?>">
+    <input type="hidden" name="previouscardnumber" value="<?php echo $donnees['cardNumber'] ?>">
 
     <label for="nom">Nom:</label>
     <input type="text" id="nom" name="nom" value="<?php echo $donnees['lastName'] ?>"><br><br>
