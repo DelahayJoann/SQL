@@ -8,6 +8,8 @@ catch(Exception $e)
     die('Erreur : '.$e->getMessage());
 }
 
+
+// Ex1
 if(isset($_POST['nom'],$_POST['prenom'],$_POST['datum'])){
     if(isset($_POST['carte'])){
         $_POST['carte'] = 1;
@@ -23,6 +25,7 @@ if(isset($_POST['nom'],$_POST['prenom'],$_POST['datum'])){
     header('Location: index.php');
 }
 
+// Ex2
 if(isset($_POST['nom2'],$_POST['prenom2'],$_POST['datum2'])){
     if(isset($_POST['carte2'])){
         $_POST['carte2'] = 1;
@@ -50,9 +53,11 @@ if(isset($_POST['nom2'],$_POST['prenom2'],$_POST['datum2'])){
         $_POST = array();
         header('Location: index.php');
 
-    }  
+    }
+
 }
 
+// Ex3
 if(isset($_POST['titre'],$_POST['artiste'],$_POST['datu'],$_POST['duree'],$_POST['timer'])){
 
     $result3 = $bdd->query("INSERT INTO shows VALUES ('','".$_POST['titre']."','".$_POST['artiste']."','".$_POST['datu']."',".$_POST['typespec'].",".$_POST['genre1spec'].",".$_POST['genre2spec'].",'".$_POST['duree']."','".$_POST['timer']."')");
@@ -62,12 +67,19 @@ if(isset($_POST['titre'],$_POST['artiste'],$_POST['datu'],$_POST['duree'],$_POST
     $_POST = array();
     header('Location: index.php');
 }
+
+// Récupère la liste de genre pour filtrer plus facilement
+$result = $bdd->query("SELECT * FROM genres ORDER BY genre ASC");
+    while($donnees = $result->fetch()){
+        $genres[strval($donnees['id'])] = array($donnees['genre'],$donnees['showTypesId']);
+    }
+$result->closeCursor();
 ?>
 
-
+<a href="ex4.php">EXERCICE 4</a>
 
 <br><br><br>
-<h1>Creation Client seul</h1>
+<h1>1. Creation Client seul</h1>
 <form action="" method="post">
     <label for="nom">Nom:</label>
     <input type="text" id="nom" name="nom"><br><br>
@@ -90,7 +102,7 @@ if(isset($_POST['titre'],$_POST['artiste'],$_POST['datu'],$_POST['duree'],$_POST
 <hr><hr>
 
 <br><br><br>
-<h1>Creation Client + carte (type,...)</h1>
+<h1>2. Creation Client + carte (type,...)</h1>
 <form action="" method="post">
     <label for="nom2">Nom:</label>
     <input type="text" id="nom2" name="nom2"><br><br>
@@ -122,7 +134,7 @@ if(isset($_POST['titre'],$_POST['artiste'],$_POST['datu'],$_POST['duree'],$_POST
 <hr><hr>
 
 <br><br><br>
-<h1>Creation spectacle</h1>
+<h1>3. Creation spectacle + filtrage dropdown</h1>
 <form action="" method="post">
     <label for="titre">Nom du spectacle:</label>
     <input type="text" id="titre" name="titre" required><br><br>
@@ -146,27 +158,14 @@ if(isset($_POST['titre'],$_POST['artiste'],$_POST['datu'],$_POST['duree'],$_POST
     </select>
     <label for="genre1spec">Genre 1:</label>
     <select name="genre1spec" id="genre1spec">
-<?php
 
-    $result = $bdd->query("SELECT * FROM genres ORDER BY genre ASC");
-    while($donnees = $result->fetch()){
-        //$genres[] = [$donnees['id'] => $donnees['genre']];
-        echo '<option value="'.$donnees['id'].'">'.$donnees['genre'].'</option>';
-    }
-    $result->closeCursor();
-?>
     </select>
     <label for="genre2spec">Genre 2:</label>
     <select name="genre2spec" id="genre2spec">
-<?php
 
-    $result = $bdd->query("SELECT * FROM genres ORDER BY genre ASC");
-    while($donnees = $result->fetch()){
-        echo '<option value="'.$donnees['id'].'">'.$donnees['genre'].'</option>';
-    }
-    $result->closeCursor();
-?>
-    </select><br><br>
+    </select>
+    
+    <br><br>
 
     <label for="duree">Durée:</label>
     <input type="time" id="duree" name="duree" step="2" required> heures<br><br>
@@ -177,23 +176,34 @@ if(isset($_POST['titre'],$_POST['artiste'],$_POST['datu'],$_POST['duree'],$_POST
     <input type="submit" value="Submit">
 </form>
 
-<!-- <script>
+<script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous">
+</script>
+<script>
+// Filter Dropdowns
     $(function () {
-        let genre = <?php echo json_encode($genre); ?>
-        let filtredGenre = [];
+        let genre = <?php echo json_encode($genres); ?>
+
         $("#typespec").change(function (e) {
             $("#genre1spec").empty();
+            $("#genre2spec").empty();
+            for (const [key, value] of Object.entries(genre)) {
+                if(value[1] == this.value){
+                    elem = document.createElement('option');
+                    elem.setAttribute('value',key);
+                    elem.innerHTML = value[0];
+                    
+                    elem2 = document.createElement('option');
+                    elem2.setAttribute('value',key);
+                    elem2.innerHTML = value[0];
 
-            genre.foreach((k,v) => {
-                if(k == this.value){
-                    filtredGenre.push()
+                    $("#genre1spec").append(elem);
+                    $("#genre2spec").append(elem2);
                 }
-            });
-
-            elem = document.createElement('option');
-            elem.setAttribute('value',)
-
-            $("#genre1spec").append(options);
+            }
         });
+        $("#typespec").trigger( "change" );;
     });
-</script> -->
+</script>
